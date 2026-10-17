@@ -1,0 +1,48 @@
+services:
+  pool:
+    image: ghcr.io/grothkeiran/sub-socks5h-pool:latest
+    init: true
+    user: "${PUID:-1000}:${PGID:-1000}"
+    restart: unless-stopped
+    read_only: true
+    stop_grace_period: 30s
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ports:
+      - "127.0.0.1:${SOCKS_PORT:-1080}:1080"
+      - "127.0.0.1:${ADMIN_PORT:-8090}:8090"
+    environment:
+      SUBSCRIPTION_URL: ${SUBSCRIPTION_URL:?请先配置本地.env}
+      SOCKS_HOST: 0.0.0.0
+      SOCKS_PORT: 1080
+      SOCKS_USERNAME: ${SOCKS_USERNAME:-pool}
+      SOCKS_PASSWORD: ${SOCKS_PASSWORD:?请先运行tools/init_env.py}
+      ADMIN_HOST: 0.0.0.0
+      ADMIN_PORT: 8090
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?请先运行tools/init_env.py}
+      DATA_DIR: /app/data
+      REFRESH_SECONDS: ${REFRESH_SECONDS:-7200}
+      HEALTH_SECONDS: ${HEALTH_SECONDS:-300}
+      MAX_STALE_SECONDS: ${MAX_STALE_SECONDS:-10800}
+      PROBE_URL: ${PROBE_URL:-https://api4.ipify.org}
+      MAX_NODES: ${MAX_NODES:-256}
+      PROBE_CONCURRENCY: ${PROBE_CONCURRENCY:-8}
+      PROBE_TIMEOUT: ${PROBE_TIMEOUT:-12}
+      REQUIRE_STABLE_EXIT: ${REQUIRE_STABLE_EXIT:-false}
+      MIN_DISTINCT_IPS: ${MIN_DISTINCT_IPS:-1}
+      FAILURE_THRESHOLD: ${FAILURE_THRESHOLD:-2}
+      CONNECT_TIMEOUT: ${CONNECT_TIMEOUT:-20}
+      RELAY_IDLE_TIMEOUT: ${RELAY_IDLE_TIMEOUT:-300}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: [CMD, python3, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/healthz', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

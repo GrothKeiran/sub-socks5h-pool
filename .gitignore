@@ -1,0 +1,11 @@
+# 私密配置、订阅快照、代理内核、缓存和联网验收结果绝不提交。
+.env
+.env.*
+!.env.example
+.cache/
+.venv/
+__pycache__/
+*.py[cod]
+bin/mihomo*
+data/
+artifacts/

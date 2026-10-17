@@ -1,0 +1,5 @@
+# 本地构建覆盖：docker compose -f compose.yaml -f compose.build.yaml up -d --build
+services:
+  pool:
+    build: .
+    image: sub-socks5h-pool:local
